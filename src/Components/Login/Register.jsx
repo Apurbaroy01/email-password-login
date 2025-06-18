@@ -1,8 +1,9 @@
-import { createUserWithEmailAndPassword, signOut } from "firebase/auth";
+import { createUserWithEmailAndPassword, sendEmailVerification, signOut, updateProfile } from "firebase/auth";
 import auth from "../firebase";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 
 const Register = () => {
@@ -15,13 +16,16 @@ const Register = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        const name = e.target.name.value;
+        const photo = e.target.photo.value;
         const email = e.target.email.value;
         const password = e.target.password.value;
         const terms = e.target.terms.checked
 
         setError('')
 
-        console.log(email, password, terms)
+        console.log(email, password, terms, name, photo)
         if (!terms) {
             setError("Please accept terms & conditions.");
             return;
@@ -37,8 +41,25 @@ const Register = () => {
             .then((result) => {
                 console.log(result.user)
                 setUser(result.user)
+                sendEmailVerification(auth.currentUser)
+                .then(()=>{
+                    console.log('varification email send')
+                })
 
                 toast('Register successFully !');
+
+
+                const profile={
+                    displayName: name,
+                    photoURL: photo
+                }
+                updateProfile(auth.currentUser, profile)
+                .then(()=>{
+                    console.log('user profile updated')
+                })
+                .catch((error)=>{
+                    console.log(error)
+                })
             })
             .catch((error) => {
                 console.log(error.message)
@@ -75,6 +96,12 @@ const Register = () => {
                         <div className="card-body">
                             <form onSubmit={handleSubmit}>
                                 <fieldset className="fieldset relative">
+
+                                    <label className="label">Name</label>
+                                    <input type="text" className="input" placeholder="name" name="name" />
+                                    <label className="label">photo URL</label>
+                                    <input type="text" className="input" placeholder="photo" name="photo" />
+
                                     <label className="label">Email</label>
                                     <input type="email" className="input" placeholder="Email" name="email" />
                                     <label className="label">Password</label>
@@ -94,6 +121,7 @@ const Register = () => {
                                             Accept trams & conditins
                                         </label>
                                     </fieldset>
+                                    <p>Already Login <Link to="/login">Login</Link></p>
 
                                     <div className="text-red-600 text-2xl">
                                         {

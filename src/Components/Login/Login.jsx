@@ -1,11 +1,14 @@
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { sendPasswordResetEmail, signInWithEmailAndPassword } from "firebase/auth";
 import auth from "../firebase";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { Link } from "react-router-dom";
 
 
 const Login = () => {
     const [success, setSuccess]=useState(false)
     const [error, setError]=useState('')
+    const emailRef=useRef();
+
     const handleLogin=(e)=>{
         e.preventDefault();
         
@@ -14,13 +17,19 @@ const Login = () => {
 
         console.log(email,password)
         setSuccess(false)
+        setError('')
 
 
         // ---------
         signInWithEmailAndPassword(auth, email,password)
         .then((result)=>{
             console.log(result.user)
-            setSuccess(true)
+            if(!result.user.emailVerified){
+                setError("please verify your email")
+            }
+            else{
+                setSuccess(true)
+            }
         })
         .catch((error)=>{
             console.log(error.message)
@@ -28,6 +37,17 @@ const Login = () => {
              
         })
 
+    }
+    const handleSubmitPassword=()=>{
+        const email= emailRef.current.value;
+        console.log("get me email address",emailRef.current.value);
+        if(!email){
+            console.log('please   provide a valid email')
+        }
+        else{
+            sendPasswordResetEmail(auth,email)
+            alert('please check your email')
+        }
     }
     return (
         <div>
@@ -44,12 +64,13 @@ const Login = () => {
                         <form onSubmit={handleLogin} className="card-body">
                             <fieldset className="fieldset">
                                 <label className="label">Email</label>
-                                <input type="email" className="input" name="email" placeholder="Email" />
+                                <input type="email" className="input" name="email" ref={emailRef} placeholder="Email" />
                                 <label className="label">Password</label>
                                 <input type="password" className="input" name="password" placeholder="Password" />
-                                <div><a className="link link-hover">Forgot password?</a></div>
+                                <div onClick={handleSubmitPassword}><a className="link link-hover">Forgot password?</a></div>
                                 <button className="btn btn-neutral mt-4">Login</button>
                             </fieldset>
+                            <p>Create an Account, please <Link to="/register">Sign Up</Link></p>
                         </form>
                         {
                             success && <p>Login Successfully</p>
