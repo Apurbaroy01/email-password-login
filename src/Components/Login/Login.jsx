@@ -1,12 +1,15 @@
 import { createUserWithEmailAndPassword, signOut } from "firebase/auth";
 import auth from "../firebase";
 import { useState } from "react";
+import { toast } from "react-toastify";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 
 const Login = () => {
     const [user, setUser] = useState(null)
     const [error, setError] = useState('')
-    const [success, setSuccess]= useState()
+    const [showPassword, setShowPassword] = useState()
+
 
 
 
@@ -14,12 +17,19 @@ const Login = () => {
         e.preventDefault();
         const email = e.target.email.value;
         const password = e.target.password.value;
-       
-        setError ('')
-        setSuccess('')
-        console.log(email, password)
+        const terms = e.target.terms.checked
+
+        setError('')
+
+        console.log(email, password, terms)
+        if (!terms) {
+            setError("Please accept terms & conditions.");
+            return;
+        }
+
         if (password.length < 6) {
             setError("must be 6 chatacters")
+            return;
 
         }
 
@@ -27,11 +37,13 @@ const Login = () => {
             .then((result) => {
                 console.log(result.user)
                 setUser(result.user)
-                setSuccess(true)
+
+                toast('Register successFully !');
             })
             .catch((error) => {
                 console.log(error.message)
-                setSuccess(false)
+
+                setError(error.message)
 
             })
     };
@@ -62,19 +74,33 @@ const Login = () => {
                     <div className="card bg-base-100 w-full max-w-sm shrink-0 shadow-2xl">
                         <div className="card-body">
                             <form onSubmit={handleSubmit}>
-                                <fieldset className="fieldset">
+                                <fieldset className="fieldset relative">
                                     <label className="label">Email</label>
                                     <input type="email" className="input" placeholder="Email" name="email" />
                                     <label className="label">Password</label>
-                                    <input type="password" className="input" placeholder="Password" name="password" />
+                                    <input type={showPassword ? "text" : "password"} className="input" placeholder="Password" name="password" />
+                                    <p onClick={() => setShowPassword(!showPassword)} className=" btn-xs absolute right-7 top-28">
+                                        {
+                                            showPassword ? <FaEyeSlash></FaEyeSlash> : <FaEye></FaEye>
+                                        }
+                                    </p>
                                     <div><a className="link link-hover">Forgot password?</a></div>
                                     <button className="btn btn-neutral mt-4">Login</button>
-                                    {
-                                        error && <p>{error}</p>
-                                    }
-                                    {
-                                        success && <p>Succcess</p>
-                                    }
+
+                                    <fieldset className="fieldset bg-base-100 border-base-300 rounded-box w-64 border p-4">
+
+                                        <label className="label">
+                                            <input type="checkbox" className="checkbox" name="terms" />
+                                            Accept trams & conditins
+                                        </label>
+                                    </fieldset>
+
+                                    <div className="text-red-600 text-2xl">
+                                        {
+                                            error && <p>  {error}</p>
+                                        }
+                                    </div>
+
                                 </fieldset>
                             </form>
                         </div>
